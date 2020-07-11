@@ -1,0 +1,77 @@
+using <abort-signal/exit.h>::{ abort_signal_native_exit as native_exit }
+using <signal.h>::{ SIGABRT, SIG_ERR, signal, raise }
+
+using err
+
+/**
+ * A closure type for the abort signal callback function.
+ */
+export closure AbortCallback();
+
+/**
+ * A container for the abort signal callback.
+ */
+thread_local AbortCallback mut abort_callback = AbortCallback {
+  ctx: 0,
+  fn: default_abort_callback,
+};
+
+/**
+ * Internal abort signal callback handler router.
+ */
+fn onabort(int signo) {
+  if 0 != abort_callback.fn {
+    static_attest(safe(abort_callback));
+    abort_callback();
+  }
+}
+
+/**
+ * The default abort handler callback, which calls `exit(128 + SIGABRT)`,
+ * which should yield an exit code of `134 = 128 + 6`.
+ */
+fn default_abort_callback() {
+  native_exit(128 + SIGABRT);
+}
+
+/**
+ * Raises the abort signal (`SIGABRT`). If a abort signal callback function
+ * was set, then the raised signal will be caught by it. The default behaviour
+ * will be that of the native `abort()` function when the `SIGABRT` handler is
+ * raises. If the `SIGABRT` signal is caught by another function not set by this
+ * module, then it will be caught there. This function will return `true` if the
+ * `SIGABRT` signal was raised and caught successfully. Check the `error` if the
+ * caller of this function gets a `false` return value.
+ */
+export fn abort(err::Err+ErrorTail mut *error) -> bool {
+  if 0 != abort_callback.fn {
+    static_attest(safe(abort_callback));
+    if unsafe<int>(SIG_ERR) == unsafe<int>(signal(SIGABRT, onabort)) {
+      error->fail_with_errno("Failed to create signal handler for 'SIGABRT'.");
+      return false;
+    }
+  }
+
+  if 0 != raise(SIGABRT) {
+    error->fail_with_errno("Failed to raise signal 'SIGABRT'.");
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Sets the abort signal (`SIGABRT`) callback handler function.
+ */
+export fn set_abort_callback(AbortCallback callback) {
+  abort_callback.fn = callback.fn;
+  abort_callback.ctx = callback.ctx;
+}
+
+/**
+ * Removes the abort signal (`SIGABRT`) callback handler function.
+ */
+export fn remove_abort_callback() {
+  abort_callback.fn = 0;
+  abort_callback.ctx = 0;
+}

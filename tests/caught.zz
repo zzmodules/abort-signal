@@ -1,0 +1,21 @@
+using <signal.h>::{ SIGABRT }
+using <stdio.h>::{ printf }
+
+using abort_signal::{ abort, set_abort_callback }
+using err
+
+test {
+  stdout = "6"
+  exit = 0
+}
+
+fn onabort() {
+  printf("%d", SIGABRT);
+}
+
+fn main() -> int {
+  new+4096 mut error = err::make();
+  set_abort_callback(onabort);
+  abort(&error);
+  return 0;
+}

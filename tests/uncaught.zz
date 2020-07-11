@@ -1,0 +1,17 @@
+using <signal.h>::{ SIGABRT }
+
+using abort_signal::{ abort  }
+using err
+
+// exit code: 134 == 134 - 128 == 6 == SIGABRT
+test {
+  stdin = ""
+  stdout = ""
+  exit = 134
+}
+
+fn main() -> int {
+  new+4096 mut error = err::make();
+  abort(&error);
+  return 0;
+}

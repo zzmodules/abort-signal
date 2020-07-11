@@ -1,0 +1,19 @@
+[project]
+version = "0.1.0"
+name = "abort-signal"
+cincludes = ["include"]
+cobjects = []
+pkgconfig = []
+cflags = []
+lflags = []
+
+[variants]
+default = []
+
+[dependencies]
+err = "*"
+log = "*"
+os = "*"
+
+[repos]
+os = "git://github.com/zzmodules/os"
