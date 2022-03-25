@@ -12,7 +12,7 @@ Add this to your `zz.toml` file:
 abort_signal = "*"
 
 [repos]
-abort_signal = "git://github.com/zzmodules/abort-signal"
+abort_signal = "git+ssh://git@github.com/zzmodules/abort-signal.git"
 ```
 
 ## Usage

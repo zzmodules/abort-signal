@@ -16,4 +16,4 @@ log = "*"
 os = "*"
 
 [repos]
-os = "git://github.com/zzmodules/os"
+os = "git+ssh://git@github.com/zzmodules/os.git"
